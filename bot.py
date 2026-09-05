@@ -103,7 +103,8 @@ class OrderModal(discord.ui.Modal):
         )
         self.add_item(self.network)
         self.add_item(self.amount)
- async def on_submit(self, interaction):
+
+    async def on_submit(self, interaction):
         guild = interaction.guild
         if not guild:
             return await interaction.response.send_message("Server only.", ephemeral=True)
