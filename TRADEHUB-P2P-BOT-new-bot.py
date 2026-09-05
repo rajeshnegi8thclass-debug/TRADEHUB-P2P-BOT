@@ -259,7 +259,6 @@ class OrderView(discord.ui.View):
         await interaction.channel.delete(reason=f"Cancelled P2P Order #{data['order_no']:04d}")
 
 @bot.tree.command(name="p2p", description="Open the TRADEHUB P2P exchange panel.")
-@app_commands.checks.has_permissions(manage_guild=True)
 async def p2p(interaction):
     embed = discord.Embed(
         title="💱 TRADEHUB P2P EXCHANGE",
