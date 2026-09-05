@@ -108,8 +108,9 @@ class OrderModal(discord.ui.Modal):
         guild = interaction.guild
         if not guild:
             return await interaction.response.send_message("Server only.", ephemeral=True)
-await interaction.response.defer(ephemeral=True)
-        order_no = next_order()
+    await interaction.response.defer(ephemeral=True)
+
+    order_no = next_order()
         customer = interaction.user
         category = guild.get_channel(EXCHANGE_CATEGORY_ID)
         if not isinstance(category, discord.CategoryChannel):
