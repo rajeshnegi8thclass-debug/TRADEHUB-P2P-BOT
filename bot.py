@@ -108,7 +108,7 @@ class OrderModal(discord.ui.Modal):
         guild = interaction.guild
         if not guild:
             return await interaction.response.send_message("Server only.", ephemeral=True)
-
+await interaction.response.defer(ephemeral=True)
         order_no = next_order()
         customer = interaction.user
         category = guild.get_channel(EXCHANGE_CATEGORY_ID)
@@ -164,7 +164,7 @@ class OrderModal(discord.ui.Modal):
         embed.set_footer(text="TRADEHUB P2P")
 
         await channel.send(customer.mention, embed=embed, view=OrderView())
-        await interaction.response.send_message(
+        await interaction.followup.send(
             f"✅ Order **#{order_no:04d}** created: {channel.mention}", ephemeral=True
         )
 
