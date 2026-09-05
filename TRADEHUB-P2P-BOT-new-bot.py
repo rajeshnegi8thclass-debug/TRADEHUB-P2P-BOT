@@ -293,7 +293,7 @@ async def order(interaction, order_number: int):
         f"💰 **Amount:** {data['amount']}\n"
         f"📌 **Status:** {data['status'].replace('_',' ').title()}\n"
         f"👤 **Customer:** <@{data['customer_id']}>\n"
-        f"🏪 **Vendor:** {f'<@{data['vendor_id']}>' if data['vendor_id'] else 'Not assigned'}",
+        f"🏪 **Vendor:** {('<@' + str(data['vendor_id']) + '>') if data['vendor_id'] else 'Not assigned'}",
         ephemeral=True
     )
 
