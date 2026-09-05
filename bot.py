@@ -317,14 +317,53 @@ async def vendor_claim(interaction):
 async def vendor_complete(interaction):
     if not isinstance(interaction.user, discord.Member) or not is_vendor(interaction.user):
         return await interaction.response.send_message("❌ P2P Exchanger role required.", ephemeral=True)
+
     row = get_order_by_channel(interaction.channel.id)
     if not row:
         return await interaction.response.send_message("❌ Order not found.", ephemeral=True)
-    data = row_data(row)
-    if data["status"] != "in_progress" or (data["vendor_id"] != interaction.user.id and not interaction.user.guild_permissions.administrator):
-        return await interaction.response.send_message("❌ You cannot complete this order.", ephemeral=True)
-    await interaction.response.send_message("Use the **Complete Order** button in the ticket to finish the transaction.")
 
+    data = row_data(row)
+
+    if data["status"] != "in_progress":
+        return await interaction.response.send_message("❌ Claim the order first.", ephemeral=True)
+
+    if data["vendor_id"] != interaction.user.id and not interaction.user.guild_permissions.administrator:
+        return await interaction.response.send_message("❌ Only the assigned vendor can complete this.", ephemeral=True)
+
+    completed = datetime.now(timezone.utc).isoformat()
+
+    db.execute(
+        "UPDATE orders SET status=?, completed_at=? WHERE id=?",
+        ("completed", completed, data["id"])
+    )
+    db.commit()
+
+    history = interaction.guild.get_channel(HISTORY_CHANNEL_ID)
+
+    embed = discord.Embed(
+        title=f"✅ COMPLETED TRANSACTION • #{data['order_no']:04d}",
+        timestamp=datetime.now(timezone.utc)
+    )
+
+    embed.add_field(name="💱 Type", value=data["type"], inline=True)
+    embed.add_field(name="🌐 Network", value=data["network"], inline=True)
+    embed.add_field(name="💰 Amount", value=data["amount"], inline=True)
+    embed.add_field(name="👤 Customer", value=f"<@{data['customer_id']}>", inline=True)
+    embed.add_field(name="🏪 Vendor", value=f"<@{interaction.user.id}>", inline=True)
+    embed.add_field(name="📌 Status", value="Completed", inline=True)
+
+    if history:
+        await history.send(embed=embed)
+
+    await interaction.response.send_message(
+        "✅ Order completed and added to P2P History. Closing ticket..."
+    )
+
+    await asyncio.sleep(2)
+
+    await interaction.channel.delete(
+        reason=f"Completed P2P Order #{data['order_no']:04d}"
+    )
 @bot.tree.command(name="vendor_orders", description="Show your active P2P orders.")
 async def vendor_orders(interaction):
     if not isinstance(interaction.user, discord.Member) or not is_vendor(interaction.user):
